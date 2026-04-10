@@ -66,6 +66,50 @@
       line-height: 1;
     }
 
+    .gif-no-image {
+      display: none;
+      font-size: 12px;
+      color: #9ca3af;
+      margin-top: 8px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .spinner {
+      display: none;
+      width: 36px;
+      height: 36px;
+      border: 4px solid #e5e7eb;
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .spinner.visible { display: block; }
+
+    .timer-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .timer-adj {
+      background: #f3f4f6;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #6b7280;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .timer-adj:hover { background: #e5e7eb; }
+
     .cue {
       font-size: 16px;
       color: #374151;
@@ -290,19 +334,25 @@
       <h1 class="exercise-name" id="exerciseName">Loading...</h1>
 
       <div class="gif-container" id="gifContainer">
+        <div class="spinner" id="gifSpinner"></div>
         <span class="gif-placeholder" id="gifPlaceholder">🧘</span>
+        <span class="gif-no-image" id="gifNoImage">No image</span>
       </div>
 
       <div class="cue" id="exerciseCue"></div>
 
-      <div class="timer-ring">
-        <svg width="80" height="80" viewBox="0 0 80 80">
-          <circle class="timer-track" cx="40" cy="40" r="34" />
-          <circle class="timer-progress" id="timerCircle" cx="40" cy="40" r="34"
-            stroke-dasharray="213.6"
-            stroke-dashoffset="0" />
-        </svg>
-        <div class="timer-label" id="timerLabel">30</div>
+      <div class="timer-row">
+        <button class="timer-adj" id="inlineMinusBtn">−</button>
+        <div class="timer-ring">
+          <svg width="80" height="80" viewBox="0 0 80 80">
+            <circle class="timer-track" cx="40" cy="40" r="34" />
+            <circle class="timer-progress" id="timerCircle" cx="40" cy="40" r="34"
+              stroke-dasharray="213.6"
+              stroke-dashoffset="0" />
+          </svg>
+          <div class="timer-label" id="timerLabel">30</div>
+        </div>
+        <button class="timer-adj" id="inlinePlusBtn">+</button>
       </div>
 
       <div class="progress-dots" id="progressDots"></div>
@@ -357,6 +407,31 @@
     let timerInterval = null;
     let isPaused = false;
     let sessionStartTime = 0;
+    let autoCloseInterval = null;
+    let audioCtx = null;
+
+    // Initialise AudioContext on first interaction (browser autoplay policy)
+    document.addEventListener('click', () => {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }, { once: true });
+
+    function playChime() {
+      if (!audioCtx) return;
+      const notes = [{ freq: 880, start: 0, duration: 0.12 }, { freq: 660, start: 0.13, duration: 0.18 }];
+      notes.forEach(({ freq, start, duration }) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.value = freq;
+        osc.type = 'sine';
+        const t = audioCtx.currentTime + start;
+        gain.gain.setValueAtTime(0.25, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+        osc.start(t);
+        osc.stop(t + duration);
+      });
+    }
 
     function shuffle(arr) {
       const a = [...arr];
@@ -394,7 +469,7 @@
           updateTimerDisplay();
           if (secondsLeft <= 0) {
             clearInterval(timerInterval);
-            advance();
+            advance(true);
           }
         }
       }, 1000);
@@ -442,28 +517,33 @@
         cueDiv.innerHTML = ex.cue;
       }
 
-      const gifContainer = document.getElementById('gifContainer');
+      const spinner = document.getElementById('gifSpinner');
       const placeholder = document.getElementById('gifPlaceholder');
+      const noImage = document.getElementById('gifNoImage');
 
-      // Try to load the GIF; fall back to placeholder emoji
+      // Show spinner while loading
+      spinner.classList.add('visible');
+      placeholder.style.display = 'none';
+      noImage.style.display = 'none';
+
+      // Remove any previously loaded img
+      const existingImg = document.getElementById('gifContainer').querySelector('img');
+      if (existingImg) existingImg.remove();
+
       const img = new Image();
       img.onload = () => {
-        placeholder.style.display = 'none';
-        gifContainer.innerHTML = '';
-        gifContainer.appendChild(img);
+        spinner.classList.remove('visible');
+        img.style.cssText = 'width:100%;height:100%;object-fit:contain;';
+        document.getElementById('gifContainer').appendChild(img);
       };
       img.onerror = () => {
+        spinner.classList.remove('visible');
         placeholder.style.display = '';
         placeholder.textContent = getPlaceholderEmoji(ex.id);
+        noImage.style.display = '';
       };
       img.src = ex.gif;
       img.alt = ex.name;
-      img.style.cssText = 'width:100%;height:100%;object-fit:contain;';
-
-      // Reset placeholder while loading
-      placeholder.style.display = '';
-      placeholder.textContent = getPlaceholderEmoji(ex.id);
-      if (!gifContainer.contains(placeholder)) gifContainer.appendChild(placeholder);
 
       isPaused = false;
       document.getElementById('mainScreen').classList.remove('paused');
@@ -489,7 +569,8 @@
       return map[id] || '🧘';
     }
 
-    function advance() {
+    function advance(fromTimer = false) {
+      if (fromTimer) playChime();
       currentIndex++;
       if (currentIndex >= session.length) {
         showCompletion();
@@ -522,11 +603,23 @@
         completedList.appendChild(li);
       });
 
-      const totalTimeEl = document.getElementById('totalTime');
-      totalTimeEl.textContent = `Total time: ${minutes}m ${seconds}s`;
-
+      document.getElementById('totalTime').textContent = `Total time: ${minutes}m ${seconds}s`;
       document.getElementById('mainScreen').classList.add('hidden');
       document.getElementById('completeScreen').classList.add('visible');
+
+      // Auto-close countdown
+      const closeBtn = document.getElementById('closeBtn');
+      let countdown = 5;
+      closeBtn.textContent = `Close (${countdown})`;
+      autoCloseInterval = setInterval(() => {
+        countdown--;
+        if (countdown <= 0) {
+          clearInterval(autoCloseInterval);
+          window.close();
+        } else {
+          closeBtn.textContent = `Close (${countdown})`;
+        }
+      }, 1000);
     }
 
     // Button handlers
@@ -555,9 +648,22 @@
       document.getElementById('pauseTimerDisplay').textContent = secondsLeft + 's';
     });
 
-    document.getElementById('restartBtn').addEventListener('click', startSession);
+    document.getElementById('inlineMinusBtn').addEventListener('click', () => {
+      if (secondsLeft > 10) { secondsLeft -= 10; updateTimerDisplay(); }
+    });
+
+    document.getElementById('inlinePlusBtn').addEventListener('click', () => {
+      if (secondsLeft < 300) { secondsLeft += 10; updateTimerDisplay(); }
+    });
+
+    document.getElementById('restartBtn').addEventListener('click', () => {
+      clearInterval(autoCloseInterval);
+      document.getElementById('closeBtn').textContent = 'Close';
+      startSession();
+    });
 
     document.getElementById('closeBtn').addEventListener('click', () => {
+      clearInterval(autoCloseInterval);
       window.close();
     });
 
