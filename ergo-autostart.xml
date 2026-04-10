@@ -31,8 +31,8 @@
         To find your pythonw.exe path, run in a command prompt:
           where pythonw
       -->
-      <Command>pythonw.exe</Command>
-      <Arguments>ergo.py</Arguments>
+      <Command>wscript.exe</Command>
+      <Arguments>"C:\Users\AbiodunFagbuaro\OneDrive - Architech\Desktop\Ergo\ergo-launcher.vbs"</Arguments>
       <WorkingDirectory>C:\Users\AbiodunFagbuaro\OneDrive - Architech\Desktop\Ergo</WorkingDirectory>
     </Exec>
   </Actions>

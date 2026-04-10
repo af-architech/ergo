@@ -1,5 +1,5 @@
 {
-  "break_interval_minutes": 1,
+  "break_interval_minutes": 2,
   "break_duration_seconds": 60,
   "start_hour": 9,
   "end_hour": 17,
