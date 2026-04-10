@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ergo Break</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+      max-width: 480px;
+      width: 100%;
+      padding: 36px 32px 32px;
+      text-align: center;
+    }
+
+    .header {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #6b7280;
+      margin-bottom: 4px;
+    }
+
+    .exercise-name {
+      font-size: 26px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 20px;
+    }
+
+    .gif-container {
+      width: 100%;
+      aspect-ratio: 4/3;
+      background: #f3f4f6;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .gif-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .gif-placeholder {
+      font-size: 64px;
+      line-height: 1;
+    }
+
+    .cue {
+      font-size: 16px;
+      color: #374151;
+      line-height: 1.7;
+      margin-bottom: 28px;
+      text-align: left;
+    }
+
+    .cue ol {
+      display: inline-block;
+      margin: 0;
+      padding-left: 24px;
+      list-style-position: inside;
+    }
+
+    .cue li {
+      margin-bottom: 8px;
+    }
+
+    .timer-ring {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 20px;
+    }
+
+    .timer-ring svg {
+      transform: rotate(-90deg);
+    }
+
+    .timer-ring circle {
+      fill: none;
+      stroke-width: 6;
+    }
+
+    .timer-track { stroke: #e5e7eb; }
+    .timer-progress { stroke: #6366f1; stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+
+    .timer-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .progress-dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #e5e7eb;
+      transition: background 0.3s;
+    }
+
+    .dot.done { background: #6366f1; }
+    .dot.active { background: #818cf8; }
+
+    .btn {
+      display: inline-block;
+      padding: 12px 32px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.85; }
+
+    .btn-pause {
+      background: #f3f4f6;
+      color: #6b7280;
+      margin-right: 8px;
+    }
+
+    .btn-resume {
+      background: #f3f4f6;
+      color: #6b7280;
+      margin-right: 8px;
+      display: none;
+    }
+
+    .btn-resume.visible {
+      display: inline-block;
+    }
+
+    .btn-next {
+      background: #6366f1;
+      color: #fff;
+    }
+
+    .paused .btn-pause { display: none; }
+    .paused .btn-resume { display: inline-block; }
+
+    .timer-ring.paused .timer-progress {
+      stroke: #fb923c;
+    }
+
+    .pause-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 10;
+    }
+
+    .pause-overlay.visible {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pause-modal {
+      background: #fff;
+      border-radius: 16px;
+      padding: 32px;
+      text-align: center;
+      max-width: 320px;
+      box-shadow: 0 20px 25px rgba(0,0,0,0.2);
+    }
+
+    .pause-modal h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 16px;
+    }
+
+    .pause-modal p {
+      font-size: 14px;
+      color: #6b7280;
+      margin-bottom: 24px;
+    }
+
+    .adjust-timer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .adjust-timer button {
+      background: #e5e7eb;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      font-size: 18px;
+      cursor: pointer;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .adjust-timer button:hover {
+      background: #d1d5db;
+    }
+
+    .adjust-timer .timer-display {
+      font-size: 24px;
+      font-weight: 700;
+      color: #111827;
+      min-width: 60px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .modal-buttons button {
+      flex: 1;
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .modal-buttons .btn-resume-now {
+      background: #6366f1;
+      color: #fff;
+    }
+
+    .modal-buttons .btn-skip-ex {
+      background: #f3f4f6;
+      color: #6b7280;
+    }
+
+    /* Complete screen */
+    .complete-screen { display: none; }
+    .complete-screen.visible { display: block; }
+    .main-screen.hidden { display: none; }
+
+    .complete-icon { font-size: 72px; margin-bottom: 16px; }
+    .complete-title { font-size: 26px; font-weight: 700; color: #111827; margin-bottom: 8px; }
+    .complete-sub { font-size: 15px; color: #6b7280; margin-bottom: 28px; line-height: 1.6; }
+
+    .btn-restart {
+      background: #6366f1;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+
+    <!-- Main exercise screen -->
+    <div class="main-screen" id="mainScreen">
+      <p class="header" id="exerciseCounter">Exercise 1 of 4</p>
+      <h1 class="exercise-name" id="exerciseName">Loading...</h1>
+
+      <div class="gif-container" id="gifContainer">
+        <span class="gif-placeholder" id="gifPlaceholder">🧘</span>
+      </div>
+
+      <div class="cue" id="exerciseCue"></div>
+
+      <div class="timer-ring">
+        <svg width="80" height="80" viewBox="0 0 80 80">
+          <circle class="timer-track" cx="40" cy="40" r="34" />
+          <circle class="timer-progress" id="timerCircle" cx="40" cy="40" r="34"
+            stroke-dasharray="213.6"
+            stroke-dashoffset="0" />
+        </svg>
+        <div class="timer-label" id="timerLabel">30</div>
+      </div>
+
+      <div class="progress-dots" id="progressDots"></div>
+
+      <div>
+        <button class="btn btn-pause" id="pauseBtn">Pause</button>
+        <button class="btn btn-resume" id="resumeBtn">Resume</button>
+        <button class="btn btn-next" id="nextBtn">Next</button>
+      </div>
+    </div>
+
+    <!-- Pause modal -->
+    <div class="pause-overlay" id="pauseOverlay">
+      <div class="pause-modal">
+        <h2>Paused</h2>
+        <p>Adjust time or resume when ready.</p>
+        <div class="adjust-timer">
+          <button id="minusBtn">−</button>
+          <span class="timer-display" id="pauseTimerDisplay">30s</span>
+          <button id="plusBtn">+</button>
+        </div>
+        <div class="modal-buttons">
+          <button class="btn-resume-now" id="resumeFromModal">Resume</button>
+          <button class="btn-skip-ex" id="skipFromModal">Skip</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Complete screen -->
+    <div class="complete-screen" id="completeScreen">
+      <div class="complete-icon">🎉</div>
+      <h1 class="complete-title">Great work!</h1>
+      <div id="completeSummary" style="margin-bottom: 24px;">
+        <p style="font-size: 14px; color: #6b7280; margin-bottom: 12px;">Exercises completed:</p>
+        <ul id="completedList" style="list-style: none; padding: 0; font-size: 15px; color: #374151;">
+        </ul>
+        <p id="totalTime" style="font-size: 14px; color: #6b7280; margin-top: 12px;"></p>
+      </div>
+      <button class="btn btn-restart" id="restartBtn">Go again</button>
+      <button class="btn" style="background: #f3f4f6; color: #6b7280; margin-left: 8px;" id="closeBtn">Close</button>
+    </div>
+
+  </div>
+
+  <script>
+    const CIRCUMFERENCE = 2 * Math.PI * 34; // 213.6
+
+    let exercises = [];
+    let session = [];
+    let currentIndex = 0;
+    let secondsLeft = 0;
+    let timerInterval = null;
+    let isPaused = false;
+    let sessionStartTime = 0;
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function pickSession(all) {
+      const shuffled = shuffle(all);
+      const count = Math.min(5, Math.max(3, shuffled.length));
+      return shuffled.slice(0, count);
+    }
+
+    function buildDots() {
+      const container = document.getElementById('progressDots');
+      container.innerHTML = '';
+      session.forEach((_, i) => {
+        const dot = document.createElement('div');
+        dot.className = 'dot' + (i < currentIndex ? ' done' : i === currentIndex ? ' active' : '');
+        container.appendChild(dot);
+      });
+    }
+
+    function startTimer(duration) {
+      clearInterval(timerInterval);
+      secondsLeft = duration;
+      updateTimerDisplay();
+
+      timerInterval = setInterval(() => {
+        if (!isPaused) {
+          secondsLeft--;
+          updateTimerDisplay();
+          if (secondsLeft <= 0) {
+            clearInterval(timerInterval);
+            advance();
+          }
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      isPaused = true;
+      document.getElementById('mainScreen').classList.add('paused');
+      document.getElementById('pauseOverlay').classList.add('visible');
+      document.getElementById('pauseTimerDisplay').textContent = secondsLeft + 's';
+    }
+
+    function resumeTimer() {
+      isPaused = false;
+      document.getElementById('mainScreen').classList.remove('paused');
+      document.getElementById('pauseOverlay').classList.remove('visible');
+    }
+
+    function updateTimerDisplay() {
+      document.getElementById('timerLabel').textContent = secondsLeft;
+      const progress = secondsLeft / session[currentIndex].duration_seconds;
+      const offset = CIRCUMFERENCE * (1 - progress);
+      document.getElementById('timerCircle').style.strokeDashoffset = offset;
+    }
+
+    function showExercise(index) {
+      const ex = session[index];
+      document.getElementById('exerciseCounter').textContent =
+        `Exercise ${index + 1} of ${session.length}`;
+      document.getElementById('exerciseName').textContent = ex.name;
+
+      // Render cue as HTML (parse newlines as steps)
+      const cueDiv = document.getElementById('exerciseCue');
+      const lines = ex.cue.split('\n').filter(l => l.trim());
+      if (lines.length > 1) {
+        const ol = document.createElement('ol');
+        lines.forEach(line => {
+          const li = document.createElement('li');
+          li.textContent = line.trim();
+          ol.appendChild(li);
+        });
+        cueDiv.innerHTML = '';
+        cueDiv.appendChild(ol);
+      } else {
+        cueDiv.innerHTML = ex.cue;
+      }
+
+      const gifContainer = document.getElementById('gifContainer');
+      const placeholder = document.getElementById('gifPlaceholder');
+
+      // Try to load the GIF; fall back to placeholder emoji
+      const img = new Image();
+      img.onload = () => {
+        placeholder.style.display = 'none';
+        gifContainer.innerHTML = '';
+        gifContainer.appendChild(img);
+      };
+      img.onerror = () => {
+        placeholder.style.display = '';
+        placeholder.textContent = getPlaceholderEmoji(ex.id);
+      };
+      img.src = ex.gif;
+      img.alt = ex.name;
+      img.style.cssText = 'width:100%;height:100%;object-fit:contain;';
+
+      // Reset placeholder while loading
+      placeholder.style.display = '';
+      placeholder.textContent = getPlaceholderEmoji(ex.id);
+      if (!gifContainer.contains(placeholder)) gifContainer.appendChild(placeholder);
+
+      isPaused = false;
+      document.getElementById('mainScreen').classList.remove('paused');
+      document.getElementById('pauseOverlay').classList.remove('visible');
+
+      buildDots();
+      startTimer(ex.duration_seconds);
+    }
+
+    function getPlaceholderEmoji(id) {
+      const map = {
+        'neck-roll': '🙆',
+        'shoulder-roll': '🤷',
+        'chest-opener': '🧍',
+        'wrist-circles': '🤲',
+        'wrist-stretch': '🖐️',
+        'seated-spinal-twist': '🔄',
+        'hip-flexor-stretch': '🦵',
+        'eye-rest': '👁️',
+        'upper-back-stretch': '🙌',
+        'ankle-circles': '🦶',
+      };
+      return map[id] || '🧘';
+    }
+
+    function advance() {
+      currentIndex++;
+      if (currentIndex >= session.length) {
+        showCompletion();
+      } else {
+        showExercise(currentIndex);
+      }
+    }
+
+    function startSession() {
+      currentIndex = 0;
+      session = pickSession(exercises);
+      sessionStartTime = Date.now();
+      document.getElementById('mainScreen').classList.remove('hidden');
+      document.getElementById('completeScreen').classList.remove('visible');
+      showExercise(0);
+    }
+
+    function showCompletion() {
+      clearInterval(timerInterval);
+      const sessionDuration = Math.round((Date.now() - sessionStartTime) / 1000);
+      const minutes = Math.floor(sessionDuration / 60);
+      const seconds = sessionDuration % 60;
+
+      const completedList = document.getElementById('completedList');
+      completedList.innerHTML = '';
+      session.forEach((ex, i) => {
+        const li = document.createElement('li');
+        li.style.marginBottom = '6px';
+        li.textContent = `${i + 1}. ${ex.name}`;
+        completedList.appendChild(li);
+      });
+
+      const totalTimeEl = document.getElementById('totalTime');
+      totalTimeEl.textContent = `Total time: ${minutes}m ${seconds}s`;
+
+      document.getElementById('mainScreen').classList.add('hidden');
+      document.getElementById('completeScreen').classList.add('visible');
+    }
+
+    // Button handlers
+    document.getElementById('pauseBtn').addEventListener('click', pauseTimer);
+    document.getElementById('resumeBtn').addEventListener('click', resumeTimer);
+
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      clearInterval(timerInterval);
+      advance();
+    });
+
+    document.getElementById('resumeFromModal').addEventListener('click', resumeTimer);
+
+    document.getElementById('skipFromModal').addEventListener('click', () => {
+      clearInterval(timerInterval);
+      advance();
+    });
+
+    document.getElementById('minusBtn').addEventListener('click', () => {
+      if (secondsLeft > 5) secondsLeft -= 5;
+      document.getElementById('pauseTimerDisplay').textContent = secondsLeft + 's';
+    });
+
+    document.getElementById('plusBtn').addEventListener('click', () => {
+      if (secondsLeft < 300) secondsLeft += 5;
+      document.getElementById('pauseTimerDisplay').textContent = secondsLeft + 's';
+    });
+
+    document.getElementById('restartBtn').addEventListener('click', startSession);
+
+    document.getElementById('closeBtn').addEventListener('click', () => {
+      window.close();
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (isPaused) resumeTimer();
+        else pauseTimer();
+      }
+      if (e.code === 'Escape') {
+        if (isPaused) {
+          clearInterval(timerInterval);
+          advance();
+        }
+      }
+    });
+
+    // Boot
+    fetch('exercises.json')
+      .then(r => r.json())
+      .then(data => {
+        exercises = data;
+        startSession();
+      })
+      .catch(() => {
+        // Fallback single exercise if fetch fails (e.g. opened as local file)
+        exercises = [{
+          id: 'eye-rest',
+          name: '20-20-20 Eye Rest',
+          duration_seconds: 20,
+          cue: 'Look at something 20 feet (6 m) away for 20 seconds. Blink slowly.',
+          gif: ''
+        }];
+        startSession();
+      });
+  </script>
+</body>
+</html>

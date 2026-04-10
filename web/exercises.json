@@ -1,0 +1,72 @@
+[
+  {
+    "id": "neck-roll",
+    "name": "Neck Roll",
+    "duration_seconds": 30,
+    "cue": "Drop your right ear to your right shoulder\nHold for 5 seconds\nSwitch to left side\nRepeat 3 times each side",
+    "gif": "gifs/neck-roll.gif"
+  },
+  {
+    "id": "shoulder-roll",
+    "name": "Shoulder Roll",
+    "duration_seconds": 20,
+    "cue": "Roll both shoulders forward in large circles\nRepeat 5 times forward\nThen reverse for 5 more backward",
+    "gif": "gifs/shoulder-roll.gif"
+  },
+  {
+    "id": "chest-opener",
+    "name": "Chest Opener",
+    "duration_seconds": 30,
+    "cue": "Clasp hands behind your back\nSqueeze shoulder blades together\nLift your chest upward\nHold 10 seconds, repeat 3 times",
+    "gif": "gifs/chest-opener.gif"
+  },
+  {
+    "id": "wrist-circles",
+    "name": "Wrist Circles",
+    "duration_seconds": 20,
+    "cue": "Extend both arms out in front\nMake fists with both hands\nRotate wrists 5 times each direction",
+    "gif": "gifs/wrist-circles.gif"
+  },
+  {
+    "id": "wrist-stretch",
+    "name": "Wrist Stretch",
+    "duration_seconds": 20,
+    "cue": "Extend one arm, palm facing up\nGently pull fingers back with other hand\nHold 10 seconds\nSwitch hands and repeat",
+    "gif": "gifs/wrist-stretch.gif"
+  },
+  {
+    "id": "seated-spinal-twist",
+    "name": "Seated Spinal Twist",
+    "duration_seconds": 30,
+    "cue": "Sit tall in your chair\nPlace right hand on left knee\nGently twist your body left\nHold 15 seconds, then switch sides",
+    "gif": "gifs/seated-spinal-twist.gif"
+  },
+  {
+    "id": "hip-flexor-stretch",
+    "name": "Hip Flexor Stretch",
+    "duration_seconds": 30,
+    "cue": "Sit at the edge of your chair\nExtend right leg back behind you\nPress hip forward gently\nHold 15 seconds, switch sides",
+    "gif": "gifs/hip-flexor-stretch.gif"
+  },
+  {
+    "id": "eye-rest",
+    "name": "20-20-20 Eye Rest",
+    "duration_seconds": 20,
+    "cue": "Look away from your screen\nFind something 20 feet (6 m) away\nFocus on it for 20 seconds\nBlink slowly to re-moisturise your eyes",
+    "gif": "gifs/eye-rest.gif"
+  },
+  {
+    "id": "upper-back-stretch",
+    "name": "Upper Back Stretch",
+    "duration_seconds": 30,
+    "cue": "Interlace your fingers together\nReach both arms forward\nRound your upper back\nHold 15 seconds, repeat twice",
+    "gif": "gifs/upper-back-stretch.gif"
+  },
+  {
+    "id": "ankle-circles",
+    "name": "Ankle Circles",
+    "duration_seconds": 20,
+    "cue": "Lift one foot slightly off the floor\nRotate the ankle in full circles\nDo 5 circles each direction\nSwitch feet and repeat",
+    "gif": "gifs/ankle-circles.gif"
+  }
+]

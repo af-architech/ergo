@@ -1,0 +1,7 @@
+{
+  "break_interval_minutes": 60,
+  "break_duration_seconds": 60,
+  "start_hour": 9,
+  "end_hour": 17,
+  "exercise_page_url": "https://your-azure-app.azurestaticapps.net"
+}
