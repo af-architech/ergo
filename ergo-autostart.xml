@@ -33,7 +33,7 @@
       -->
       <Command>pythonw.exe</Command>
       <Arguments>ergo.py</Arguments>
-      <WorkingDirectory>C:\path\to\Ergo</WorkingDirectory>
+      <WorkingDirectory>C:\Users\AbiodunFagbuaro\OneDrive - Architech\Desktop\Ergo</WorkingDirectory>
     </Exec>
   </Actions>
 </Task>

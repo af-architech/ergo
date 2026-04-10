@@ -1,7 +1,7 @@
 {
-  "break_interval_minutes": 60,
+  "break_interval_minutes": 1,
   "break_duration_seconds": 60,
   "start_hour": 9,
   "end_hour": 17,
-  "exercise_page_url": "https://your-azure-app.azurestaticapps.net"
+  "exercise_page_url": "https://salmon-sky-0dc4ed910.1.azurestaticapps.net"
 }
