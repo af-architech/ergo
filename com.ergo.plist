@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+
+  <key>Label</key>
+  <string>com.ergo</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <!--
+      IMPORTANT: Replace the path below with the actual path to python3 on your Mac.
+      To find it, run in Terminal:  which python3
+    -->
+    <string>/usr/bin/python3</string>
+
+    <!--
+      IMPORTANT: Replace the path below with the actual path to ergo.py on your Mac.
+      Example: /Users/yourname/Projects/Ergo/ergo.py
+    -->
+    <string>/Users/YOURUSERNAME/path/to/Ergo/ergo.py</string>
+  </array>
+
+  <!-- Working directory must be the folder containing ergo.py and ergo-config.json -->
+  <key>WorkingDirectory</key>
+  <string>/Users/YOURUSERNAME/path/to/Ergo</string>
+
+  <!-- Start automatically at login -->
+  <key>RunAtLoad</key>
+  <true/>
+
+  <!-- Do not restart if it exits -->
+  <key>KeepAlive</key>
+  <false/>
+
+  <!-- Log stdout and stderr for debugging -->
+  <key>StandardOutPath</key>
+  <string>/tmp/ergo.log</string>
+  <key>StandardErrorPath</key>
+  <string>/tmp/ergo-error.log</string>
+
+</dict>
+</plist>

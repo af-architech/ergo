@@ -110,20 +110,88 @@ The page falls back to emoji placeholders if a GIF is missing, so exercises work
 
 ## macOS setup
 
+### 1. Install Python 3
+
+Check if Python 3 is already installed:
+
+```bash
+python3 --version
+```
+
+If not, install via Homebrew:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew install python
+```
+
+### 2. Install dependencies
+
 ```bash
 pip3 install schedule plyer
 ```
 
-Copy the launchd plist to your LaunchAgents folder:
+### 3. Edit the config
+
+Open `ergo-config.json` and set your preferences — same fields as Windows. Make sure `exercise_page_url` points to your Azure Static Web App URL.
+
+### 4. Test it manually
+
+Set `break_interval_minutes` to `1`, then run:
 
 ```bash
-cp com.ergo.plist ~/Library/LaunchAgents/
+cd /path/to/Ergo
+python3 ergo.py
 ```
 
-Open `~/Library/LaunchAgents/com.ergo.plist` and update the path to `ergo.py`, then load it:
+A notification should appear within ~1 minute and open the exercise page in your browser. Revert the interval to `60` when done.
+
+> **Note:** macOS may ask you to allow notifications for Terminal (or your Python app) the first time. Go to **System Settings → Notifications** and enable them.
+
+### 5. Set up autostart (runs at Mac login)
+
+**a.** Edit `com.ergo.plist` — update the two `YOURUSERNAME/path/to/Ergo` placeholders with your real paths:
+
+```bash
+# Find your python3 path:
+which python3
+
+# Find your Ergo folder path:
+pwd   # run this from inside the Ergo folder
+```
+
+**b.** Copy the plist to LaunchAgents:
+
+```bash
+cp /path/to/Ergo/com.ergo.plist ~/Library/LaunchAgents/
+```
+
+**c.** Load it:
 
 ```bash
 launchctl load ~/Library/LaunchAgents/com.ergo.plist
+```
+
+**d.** Verify it's running:
+
+```bash
+launchctl list | grep com.ergo
+```
+
+You should see `com.ergo` listed with a PID (if running) or `0` (loaded, waiting for next trigger).
+
+**e.** Check logs if something seems wrong:
+
+```bash
+cat /tmp/ergo.log        # stdout — normal output
+cat /tmp/ergo-error.log  # stderr — errors
+```
+
+### 6. Remove autostart (if needed)
+
+```bash
+launchctl unload ~/Library/LaunchAgents/com.ergo.plist
+rm ~/Library/LaunchAgents/com.ergo.plist
 ```
 
 ---
@@ -134,7 +202,8 @@ launchctl load ~/Library/LaunchAgents/com.ergo.plist
 Ergo/
 ├── ergo.py                 # Main scheduler script
 ├── ergo-config.json        # Your config (edit this)
-├── ergo-autostart.xml      # Windows Task Scheduler definition
+├── ergo-autostart.xml      # Windows autostart (Task Scheduler)
+├── com.ergo.plist          # macOS autostart (launchd)
 ├── README.md
 ├── docs/                   # Architecture docs and ADRs
 └── web/
